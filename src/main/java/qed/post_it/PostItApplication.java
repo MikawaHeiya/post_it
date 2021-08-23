@@ -20,5 +20,13 @@ public class PostItApplication
         }
 
         SpringApplication.run(PostItApplication.class, args);
+
+        var sql = new SqlConnector();
+        var list = sql.GetBlocks();
+        for (var r : list)
+        {
+            System.out.println(r);
+        }
+        sql.CloseConnection();
     }
 }
