@@ -22,7 +22,7 @@ public class PostItApplication
         SpringApplication.run(PostItApplication.class, args);
 
         var sql = new SqlConnector();
-        sql.NewReply("新帖测试的测试内容", 2, 0, 1);
+        sql.UnLike(1, 1);
         sql.CloseConnection();
     }
 }

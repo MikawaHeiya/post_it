@@ -321,4 +321,120 @@ public class SqlConnector
             throw new RuntimeException("SqlConnector.NewReply: 更新数据时异常。");
         }
     }
+
+    public void NewComment(String comment, int postId, int floor, int publisherId, int ownerId)
+    {
+        try
+        {
+            statement.execute(String.format("insert into comments values(%d, '%s', NOW(), %d, %d, %d)",
+                    postId, comment, floor, ownerId, publisherId));
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.NewComment: 更新数据时异常。");
+        }
+    }
+
+    public void Like(int postId, int floor)
+    {
+        try
+        {
+            var result = statement.executeQuery(
+                    String.format("select likes from replies where post_id=%d and floor=%d", postId, floor));
+
+            if (result.next())
+            {
+                int like = result.getInt("likes");
+
+                statement.execute(String.format("update replies set likes=%d where post_id=%d and floor=%d",
+                        like + 1, postId, floor));
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.Like: 更新数据时异常。");
+        }
+    }
+
+    public void UnLike(int postId, int floor)
+    {
+        try
+        {
+            var result = statement.executeQuery(
+                    String.format("select likes from replies where post_id=%d and floor=%d", postId, floor));
+
+            if (result.next())
+            {
+                int like = result.getInt("likes");
+
+                if (like > 0)
+                {
+                    statement.execute(String.format("update replies set likes=%d where post_id=%d and floor=%d",
+                            like - 1, postId, floor));
+                }
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.Like: 更新数据时异常。");
+        }
+    }
+
+    public void Dislike(int postId, int floor)
+    {
+        try
+        {
+            var result = statement.executeQuery(
+                    String.format("select dislikes from replies where post_id=%d and floor=%d", postId, floor));
+
+            if (result.next())
+            {
+                int dislike = result.getInt("dislikes");
+
+                statement.execute(String.format("update replies set dislikes=%d where post_id=%d and floor=%d",
+                        dislike + 1, postId, floor));
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.Like: 更新数据时异常。");
+        }
+    }
+
+    public void UnDislike(int postId, int floor)
+    {
+        try
+        {
+            var result = statement.executeQuery(
+                    String.format("select dislikes from replies where post_id=%d and floor=%d", postId, floor));
+
+            if (result.next())
+            {
+                int dislike = result.getInt("dislikes");
+
+                if (dislike > 0)
+                {
+                    statement.execute(String.format("update replies set dislikes=%d where post_id=%d and floor=%d",
+                            dislike - 1, postId, floor));
+                }
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.Like: 更新数据时异常。");
+        }
+    }
 }

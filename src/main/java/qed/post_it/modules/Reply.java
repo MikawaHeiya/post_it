@@ -7,8 +7,8 @@ public class Reply
     public int publisherId;
     public String publisherName;
     public int floor;
-    public int like;
-    public int dislike;
+    public int likes;
+    public int dislikes;
     public String publishTime;
 
     public Reply(String rep, int poId, int puId, String puName, int f, int l, int dl, String pTime)
@@ -18,8 +18,8 @@ public class Reply
         publisherId = puId;
         publisherName = puName;
         floor = f;
-        like = l;
-        dislike = dl;
+        likes = l;
+        dislikes = dl;
         publishTime = pTime;
     }
 
@@ -32,8 +32,8 @@ public class Reply
                 ", publisherId=" + publisherId +
                 ", publisherName='" + publisherName + '\'' +
                 ", floor=" + floor +
-                ", like=" + like +
-                ", dislike=" + dislike +
+                ", likes=" + likes +
+                ", dislikes=" + dislikes +
                 ", publishTime='" + publishTime + '\'' +
                 '}';
     }
