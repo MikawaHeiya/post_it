@@ -266,4 +266,59 @@ public class SqlConnector
 
     //获取用户收到的回复与评论
     //public ArrayList<Message> GetMessages(int id)
+
+    //获取帖子的层数
+    //public int GetFloor(int postId)
+
+    public void NewPost(String postName, int publisherId, String block)
+    {
+        int id = 0;
+
+        try
+        {
+            var result = statement.executeQuery("select post_num from infos where id = 0");
+            while (result.next())
+            {
+                id = result.getInt("post_num") + 1;
+            }
+
+            if (id <= 0)
+            {
+                throw new RuntimeException("SqlConnector.Register: 查询数据时异常。");
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.NewPost: 查询数据时异常。");
+        }
+
+        try
+        {
+            statement.execute(String.format("insert into posts values('%s', NOW(), %d, %d, '%s')",
+                    postName, id, publisherId, block));
+            statement.execute(String.format("update infos set post_num=%d where id=0", id));
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.NewPost: 更新数据时异常。");
+        }
+    }
+
+    public void NewReply(String reply, int postId, int floor, int publisherId)
+    {
+        try
+        {
+            statement.execute(String.format("insert into replies values(%d, %d, '%s', 0, 0, NOW(), %d)",
+                    postId, floor, reply, publisherId));
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.NewReply: 更新数据时异常。");
+        }
+    }
 }

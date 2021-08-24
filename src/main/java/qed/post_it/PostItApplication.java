@@ -22,11 +22,7 @@ public class PostItApplication
         SpringApplication.run(PostItApplication.class, args);
 
         var sql = new SqlConnector();
-        var list = sql.GetComments(1);
-        for (var r : list.entrySet())
-        {
-            System.out.println(r);
-        }
+        sql.NewReply("新帖测试的测试内容", 2, 0, 1);
         sql.CloseConnection();
     }
 }
