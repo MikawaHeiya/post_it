@@ -8,6 +8,7 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class SqlConnector
 {
@@ -180,7 +181,7 @@ public class SqlConnector
         return blockInfo;
     }
 
-    public ArrayList<Post> GetPosts(String blockName)
+    public ArrayList<Post> GetBlockPosts(String blockName)
     {
         var posts = new ArrayList<Post>();
         try
@@ -204,6 +205,9 @@ public class SqlConnector
 
         return posts;
     }
+
+    //获取用户所发的全部帖子
+    //public ArrayList<Post> GetUserPosts(int id)
 
     public ArrayList<Reply> GetReplies(int postId)
     {
@@ -232,4 +236,34 @@ public class SqlConnector
 
         return replies;
     }
+
+    public TreeMap<Integer, Comment> GetComments(int postId)
+    {
+        var comments = new TreeMap<Integer, Comment>();
+
+        try
+        {
+            var result = statement.executeQuery("select * from comments, users where comments.publisher_id=users.id and comments.post_id=" + postId + " order by comments.floor");
+
+            while (result.next())
+            {
+                comments.put(result.getInt("floor"),
+                        new Comment(result.getString("comment"), result.getInt("post_id"),
+                                result.getInt("owner_id"), result.getInt("publisher_id"),
+                                result.getString("name"), dateFormat.format(result.getTimestamp("comment_time"))));
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetComments: 查询数据时异常");
+        }
+
+        return comments;
+    }
+
+    //获取用户收到的回复与评论
+    //public ArrayList<Message> GetMessages(int id)
 }

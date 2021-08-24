@@ -22,8 +22,8 @@ public class PostItApplication
         SpringApplication.run(PostItApplication.class, args);
 
         var sql = new SqlConnector();
-        var list = sql.GetBlocks();
-        for (var r : list)
+        var list = sql.GetComments(1);
+        for (var r : list.entrySet())
         {
             System.out.println(r);
         }
