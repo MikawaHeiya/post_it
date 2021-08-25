@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ch">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,22 +23,75 @@
     <link rel="stylesheet" href="assets/css/app.css">
     <link rel="stylesheet" href="//unpkg.com/element-ui@2.15.5/lib/theme-chalk/index.css">
 </head>
-<body>
 
-<header class="am-topbar am-topbar-inverse admin-header" id="header">
-    <div class="am-topbar-brand">
-        <strong>Post it</strong> <small>你坛</small>
-    </div>
-    <div class="am-collapse am-topbar-collapse">
-        <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list">
-            <li class="am-hide-md-only" v-if="!isLogin">
-                <a href="javascript:;"><span class="admin-fullText">登录</span></a>
-            </li>
-            <li class="am-hide-md-only" v-if="!isLogin">
-                <a href="javascript:;"><span class="admin-fullText">注册</span></a>
-            </li>
-            <li class="am-hide-md-only" v-if="isLogin">
-                <a href="javascript:;"><span class="admin-fullText">
+<style>
+    .des {
+        font-size: 13px;
+        color: #999;
+    }
+
+    .bottom {
+        margin-top: 13px;
+        line-height: 12px;
+    }
+
+    .image {
+        width: 100%;
+        display: block;
+    }
+
+    .clearfix:before,
+    .clearfix:after {
+        display: table;
+        content: "";
+    }
+
+    .clearfix:after {
+        clear: both
+    }
+    .header {
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 200%;
+        color: #333;
+        margin-top: 30px;
+    }
+
+    .header p {
+        font-size: 14px;
+    }
+
+    .box-card {
+        width: 1750px;
+    }
+
+    .text {
+        font-size: 14px;
+    }
+
+    .item {
+        margin-bottom: 18px;
+    }
+</style>
+
+<body>
+<div id="app">
+    <header class="am-topbar am-topbar-inverse admin-header" id="header">
+        <div class="am-topbar-brand">
+            <strong>Post it</strong> <small>你坛</small>
+        </div>
+        <div class="am-collapse am-topbar-collapse">
+            <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list">
+                <li class="am-hide-md-only" v-if="!isLogin">
+                    <a href="javascript:;"><span class="admin-fullText">登录</span></a>
+                </li>
+                <li class="am-hide-md-only" v-if="!isLogin">
+                    <a href="javascript:;"><span class="admin-fullText">注册</span></a>
+                </li>
+                <li class="am-hide-md-only" v-if="isLogin">
+                    <a href="javascript:;"><span class="admin-fullText">
                     <el-dropdown>
                         <el-button type="primary" style="background-color: #0c80ba">
                             {{userName}}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -50,15 +103,59 @@
                     </el-dropdown-menu>
                     </el-dropdown>
                 </span></a>
-            </li>
-            <li class="am-hide-sm-only">
-                <a href="javascript:;"><el-button icon="el-icon-switch-button" style="background-color: #0c80ba" circle></el-button></a>
-            </li>
-        </ul>
-    </div>
-</header>
+                </li>
+                <li class="am-hide-sm-only">
+                    <a href="javascript:;"><el-button icon="el-icon-switch-button" style="background-color: #0c80ba" circle></el-button></a>
+                </li>
+            </ul>
+        </div>
+    </header>
 
+    <div class="header">
+        <div class="am-g">
+            <h1>你坛 - Post it</h1>
+            <p>一个你可以畅所欲言的地方</p>
+        </div>
+        <hr />
+    </div>
+
+    <div id="blocks">
+        <h1 style="margin-left: 80px">板块</h1>
+        <el-row>
+            <el-col :span="3" v-for="(block, index) in blocks" :key="block" :offset="1">
+                <el-card :body-style="{ padding: '0px' }" shadow="hover">
+                    <img src="assets/block_icons/block_icon_测试.png" class="image">
+                    <div style="padding: 14px;" @click="openBlock(block.name)">
+                        <span>{{block.name}}</span>
+                        <div class="bottom clearfix">
+                            <span class="des">{{block.des}}</span>
+                        </div>
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
+        <hr />
+    </div>
+
+    <div id="posts">
+        <h1 style="margin-left: 80px">热门帖子</h1>
+        <el-row v-for="(post, index) in hotPosts" :key="post">
+            <el-col :span="1750" :offset="1">
+                <el-card class="box-card">
+                    <div slot="header" class="clearfix" @click="openPost(post.postId)">
+                        <span>{{post.name}}</span>
+                        <span style="float: right; padding: 3px 0" type="text">{{post.publisherName}}</span>
+                    </div>
+                    <div class="text item">
+                        {{post.reply}}
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
+    </div>
+</div>
 </body>
+
 <script src="assets/vue.js"></script>
 <script src="//unpkg.com/element-ui@2.15.5/lib/index.js"></script>
 <script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
@@ -68,14 +165,24 @@
 <script>
     new Vue(
         {
-            el: '#header',
+            el: '#app',
             data:
                 {
                     isLogin: true,
-                    userName: "mikawa"
+                    userName: "mikawa",
+                    currentDate: new Date(),
+                    blocks: [{name: '测试', des: '只是测试'},{name: '测试', des: '只是测试'}
+                    ,{name: '测试', des: '只是测试'},{name: '测试', des: '只是测试'},{name: '测试', des: '只是测试'}],
+                    hotPosts: [{name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
+                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
+                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
+                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
+                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'}]
                 },
             methods:
                 {
+                    openBlock: function (name) {alert(name)},
+                    openPost: function (id) {alert(id)}
                 }
         })
 </script>
