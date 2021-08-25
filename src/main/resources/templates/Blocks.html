@@ -2,29 +2,80 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <!-- import CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>你坛 - Post it</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link rel="icon" type="image/png" href="assets/i/favicon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="assets/i/app-icon72x72@2x.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Amaze UI"/>
+    <link rel="apple-touch-icon-precomposed" href="assets/i/app-icon72x72@2x.png">
+    <meta name="msapplication-TileImage" content="assets/i/app-icon72x72@2x.png">
+    <meta name="msapplication-TileColor" content="#0e90d2">
+    <link rel="stylesheet" href="assets/css/amazeui.min.css">
+    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="//unpkg.com/element-ui@2.15.5/lib/theme-chalk/index.css">
 </head>
 <body>
-<div id="header">
-    <br>
-    <el-page-header @back="goBack" content="你坛 - Post it" ></el-page-header>
-    <br>
-</div>
+
+<header class="am-topbar am-topbar-inverse admin-header" id="header">
+    <div class="am-topbar-brand">
+        <strong>Post it</strong> <small>你坛</small>
+    </div>
+    <div class="am-collapse am-topbar-collapse">
+        <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list">
+            <li class="am-hide-md-only" v-if="!isLogin">
+                <a href="javascript:;"><span class="admin-fullText">登录</span></a>
+            </li>
+            <li class="am-hide-md-only" v-if="!isLogin">
+                <a href="javascript:;"><span class="admin-fullText">注册</span></a>
+            </li>
+            <li class="am-hide-md-only" v-if="isLogin">
+                <a href="javascript:;"><span class="admin-fullText">
+                    <el-dropdown>
+                        <el-button type="primary" style="background-color: #0c80ba">
+                            {{userName}}<i class="el-icon-arrow-down el-icon--right"></i>
+                        </el-button>
+                        <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>修改信息</el-dropdown-item>
+                        <el-dropdown-item>我的消息</el-dropdown-item>
+                        <el-dropdown-item>我的帖子</el-dropdown-item>
+                    </el-dropdown-menu>
+                    </el-dropdown>
+                </span></a>
+            </li>
+            <li class="am-hide-sm-only">
+                <a href="javascript:;"><el-button icon="el-icon-switch-button" style="background-color: #0c80ba" circle></el-button></a>
+            </li>
+        </ul>
+    </div>
+</header>
+
 </body>
-<script src="https://unpkg.com/vue/dist/vue.js"></script>
-<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="assets/vue.js"></script>
+<script src="//unpkg.com/element-ui@2.15.5/lib/index.js"></script>
+<script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://cdn.staticfile.org/modernizr/2.8.3/modernizr.js"></script>
+<script src="assets/js/amazeui.ie8polyfill.min.js"></script>
+<script src="assets/js/amazeui.min.js"></script>
 <script>
     new Vue(
         {
             el: '#header',
-            data: function()
-            {
-                return { visible: false }
-            },
-            method:
+            data:
                 {
-                    goBack() {}
+                    isLogin: true,
+                    userName: "mikawa"
+                },
+            methods:
+                {
                 }
         })
 </script>
