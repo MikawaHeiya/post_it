@@ -1,5 +1,6 @@
 package qed.post_it.sql;
 
+import org.springframework.expression.spel.ast.NullLiteral;
 import qed.post_it.modules.*;
 import qed.post_it.utility.exceptions.*;
 import qed.post_it.utility.tools.*;
@@ -257,7 +258,24 @@ public class SqlConnector
     }
 
     //获取用户所发的全部帖子
-    //public ArrayList<Post> GetUserPosts(int id)
+    public ArrayList<Post> GetUserPosts(int id){
+        var allPostInfo=new ArrayList<Post>();
+        try{
+            var result=statement.executeQuery("select * from posts, users where posts.publisher_id=users.id and publisher_id="+id+" order by publisher_time");
+            while(result.next()){
+                allPostInfo.add(new Post(result.getString("post_name"),
+                        result.getInt("post_id"),
+                        result.getInt("publisher_id"),
+                        result.getString("name"),
+                        dateFormat.format(result.getTimestamp("publish_time"))));
+            }
+            result.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetPosts: 查询数据时异常");
+        }
+        return allPostInfo;
+    }
 
     public ArrayList<Reply> GetReplies(int postId)
     {
@@ -318,7 +336,16 @@ public class SqlConnector
     //public ArrayList<Message> GetMessages(int id)
 
     //获取帖子的层数
-    //public int GetFloor(int postId)
+    public int GetFloor(int postId){
+        int floor=0;
+        try{
+            var result=statement.executeQuery("select max(floor) from posts,replies where posts.post_id=replies.post_id and posts.post_id="+postId);
+            floor=result.getInt("floor");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return floor;
+    }
 
     public void NewPost(String postName, int publisherId, String block)
     {
