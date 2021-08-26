@@ -14,9 +14,6 @@ public class Block
     @Override
     public String toString()
     {
-        return "Block{" +
-                "blockName='" + blockName + '\'' +
-                ", blockDescription='" + blockDescription + '\'' +
-                '}';
+        return String.format("{\"name\": \"%s\", \"des\": \"%s\"}", blockName, blockDescription);
     }
 }

@@ -69,7 +69,7 @@ public class SqlConnector
         }
     }
 
-    public void Register(String name, String password)
+    public int Register(String name, String password)
     {
         int id = 0;
 
@@ -80,7 +80,7 @@ public class SqlConnector
             {
                 if (result.getString("name").equals(name))
                 {
-                    throw new UserExistsException("用户\"" + name + "\"已存在。");
+                    throw new UserExistsException("用户'" + name + "'已存在。");
                 }
             }
 
@@ -105,7 +105,7 @@ public class SqlConnector
 
         try
         {
-            statement.execute(String.format("insert into users values(%d, '%s', md5('%s'))", id, name, password));
+            statement.execute(String.format("insert into users values(%d, '%s', md5('%s'), NOW())", id, name, password));
             statement.execute(String.format("update infos set user_num = %d where id = 0", id));
         }
         catch (SQLException ex)
@@ -113,6 +113,8 @@ public class SqlConnector
             ex.printStackTrace();
             throw new RuntimeException("SqlConnector.Register: 插入数据时异常。");
         }
+
+        return id;
     }
 
     public void Login(String name, String password)
@@ -143,8 +145,7 @@ public class SqlConnector
         {
             var result = statement.executeQuery("select name from users where id=" + id);
 
-            result.next();
-            if (result.isFirst())
+            if (result.next())
             {
                 name = result.getString("name");
             }
@@ -158,6 +159,30 @@ public class SqlConnector
         }
 
         return name;
+    }
+
+    public int UserIdOf(String name)
+    {
+        int id = 0;
+
+        try
+        {
+            var result = statement.executeQuery("select id from users where name='" + name + "'");
+
+            if (result.next())
+            {
+                id = result.getInt("id");
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.UserIdOf: 查询数据时异常");
+        }
+
+        return id;
     }
 
     public ArrayList<Block> GetBlocks()
@@ -187,6 +212,31 @@ public class SqlConnector
         try
         {
             var result = statement.executeQuery("select * from posts, users where posts.publisher_id=users.id and posts.block='" + blockName + "'");
+
+            while (result.next())
+            {
+                posts.add(new Post(result.getString("post_name"), result.getInt("post_id"),
+                        result.getInt("publisher_id"), result.getString("name"),
+                        dateFormat.format(result.getTimestamp("publish_time"))));
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetPosts: 查询数据时异常");
+        }
+
+        return posts;
+    }
+
+    public ArrayList<Post> GetHotPosts()
+    {
+        var posts = new ArrayList<Post>();
+        try
+        {
+            var result = statement.executeQuery("select * from posts, users where posts.publisher_id=users.id order by publish_time limit 5");
 
             while (result.next())
             {

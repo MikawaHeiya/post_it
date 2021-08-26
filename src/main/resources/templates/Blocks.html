@@ -54,13 +54,13 @@
     }
 
     .header h1 {
-        font-size: 200%;
+        font-size: 300%;
         color: #333;
         margin-top: 30px;
     }
 
     .header p {
-        font-size: 14px;
+        font-size: 18px;
     }
 
     .box-card {
@@ -85,10 +85,10 @@
         <div class="am-collapse am-topbar-collapse">
             <ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list">
                 <li class="am-hide-md-only" v-if="!isLogin">
-                    <a href="javascript:;"><span class="admin-fullText">登录</span></a>
+                    <a href="javascript:;"><span class="admin-fullText" @click="loginDialogVisible = true">登录</span></a>
                 </li>
                 <li class="am-hide-md-only" v-if="!isLogin">
-                    <a href="javascript:;"><span class="admin-fullText">注册</span></a>
+                    <a href="javascript:;"><span class="admin-fullText" @click="registerDialogVisible = true">注册</span></a>
                 </li>
                 <li class="am-hide-md-only" v-if="isLogin">
                     <a href="javascript:;"><span class="admin-fullText">
@@ -105,11 +105,41 @@
                 </span></a>
                 </li>
                 <li class="am-hide-sm-only">
-                    <a href="javascript:;"><el-button icon="el-icon-switch-button" style="background-color: #0c80ba" circle></el-button></a>
+                    <a href="javascript:;"><el-button icon="el-icon-switch-button" style="background-color: #0c80ba" @click="logout()" circle></el-button></a>
                 </li>
             </ul>
         </div>
     </header>
+
+    <el-dialog title="登录" :visible.sync="loginDialogVisible" width="30%">
+        <el-form :model="form">
+            <el-form-item label="用户名" :label-width="formLabelWidth">
+                <el-input v-model="form.name" autocomplete="off" size="48px"></el-input>
+            </el-form-item>
+            <el-form-item label="密 码" :label-width="formLabelWidth">
+                <el-input v-model="form.password" autocomplete="off" show-password></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="loginDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="login()">确 定</el-button>
+        </div>
+    </el-dialog>
+
+    <el-dialog title="注册" :visible.sync="registerDialogVisible" width="30%">
+        <el-form :model="form">
+            <el-form-item label="用户名" :label-width="formLabelWidth">
+                <el-input v-model="form.name" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="密 码" :label-width="formLabelWidth">
+                <el-input v-model="form.password" autocomplete="off" show-password></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="registerDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="register()">确 定</el-button>
+        </div>
+    </el-dialog>
 
     <div class="header">
         <div class="am-g">
@@ -146,8 +176,8 @@
                         <span>{{post.name}}</span>
                         <span style="float: right; padding: 3px 0" type="text">{{post.publisherName}}</span>
                     </div>
-                    <div class="text item">
-                        {{post.reply}}
+                    <div class="bottom clearfix">
+                        <span class="des">{{post.publishTime}}</span>
                     </div>
                 </el-card>
             </el-col>
@@ -163,26 +193,135 @@
 <script src="assets/js/amazeui.ie8polyfill.min.js"></script>
 <script src="assets/js/amazeui.min.js"></script>
 <script>
+    let data =
+        {
+            loginDialogVisible: false,
+            registerDialogVisible: false,
+            form: {name: "", password: ""},
+            formLabelWidth: "55px",
+            isLogin: false,
+            userName: "",
+            userId: 0,
+            currentDate: new Date(),
+            blocks: [],
+            hotPosts: []
+        }
+
     new Vue(
         {
             el: '#app',
-            data:
+            data: data,
+            created: function ()
+            {
+                $.post("post_it/get_blocks", function (res)
                 {
-                    isLogin: true,
-                    userName: "mikawa",
-                    currentDate: new Date(),
-                    blocks: [{name: '测试', des: '只是测试'},{name: '测试', des: '只是测试'}
-                    ,{name: '测试', des: '只是测试'},{name: '测试', des: '只是测试'},{name: '测试', des: '只是测试'}],
-                    hotPosts: [{name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
-                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
-                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
-                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'},
-                        {name: '某个帖子', reply: '测测测测测试测试测试测试', postId: 1, publisherName: 'mikawa'}]
-                },
+                    let result = JSON.parse(res);
+
+                    if (result.success === true)
+                    {
+                        data.blocks = result.blocks
+                    }
+                    else
+                    {
+                        alert(result.msg)
+                    }
+                })
+
+                $.post("post_it/get_hot_posts", function (res)
+                {
+                    let result = JSON.parse(res)
+
+                    if (result.success === true)
+                    {
+                        data.hotPosts = result.hotPosts
+                    }
+                    else
+                    {
+                        alert(result.msg)
+                    }
+                })
+
+                $.post("post_it/get_account_info", function (res)
+                {
+                    let result = JSON.parse(res)
+
+                    if (result.success === true)
+                    {
+                        if (result.isLogin === true)
+                        {
+                            data.userName = result.name
+                            data.userId = result.id
+                            data.isLogin = true
+                        }
+                        else
+                        {
+                            data.isLogin = false
+                        }
+                    }
+                    else
+                    {
+                        data.isLogin = false
+                        alert(result.msg)
+                    }
+                })
+            },
             methods:
                 {
                     openBlock: function (name) {alert(name)},
-                    openPost: function (id) {alert(id)}
+
+                    openPost: function (id) {alert(id)},
+
+                    login: function ()
+                    {
+                        $.post("/post_it/login", data.form, function (res)
+                        {
+                            let result = JSON.parse(res)
+
+                            if (result.success === true)
+                            {
+                                alert("登陆成功~")
+
+                                data.loginDialogVisible = false
+                                data.userName = result.name
+                                data.userId = result.id
+                                data.isLogin = result.isLogin
+                            }
+                            else
+                            {
+                                alert(result.msg)
+                            }
+                        })
+                    },
+
+                    register: function ()
+                    {
+                        $.post("/post_it/register", data.form, function (res)
+                        {
+                            let result = JSON.parse(res)
+
+                            if (result.success === true)
+                            {
+                                alert("注册成功~")
+
+                                data.registerDialogVisible = false
+                                data.userName = result.name
+                                data.userId = result.id
+                                data.isLogin = result.isLogin
+                            }
+                            else
+                            {
+                                alert(result.msg)
+                            }
+                        })
+                    },
+
+                    logout: function ()
+                    {
+                        $.post("/post_it/logout", function ()
+                        {
+                            data.isLogin = false
+                        })
+                    }
                 }
         })
 </script>

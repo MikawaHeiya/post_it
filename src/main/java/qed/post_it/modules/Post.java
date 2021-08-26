@@ -22,12 +22,7 @@ public class Post
     @Override
     public String toString()
     {
-        return "Post{" +
-                "name='" + name + '\'' +
-                ", postId=" + postId +
-                ", publisherId=" + publisherId +
-                ", publisherName='" + publisherName + '\'' +
-                ", publishTime='" + publishTime + '\'' +
-                '}';
+        return String.format("{\"name\": \"%s\", \"postId\": %d, \"publisherId\": %d, \"publisherName\": \"%s\", \"publishTime\": \"%s\"}",
+                name, postId, publisherId, publisherName, publishTime);
     }
 }
