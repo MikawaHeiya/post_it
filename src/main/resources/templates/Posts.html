@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ch">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -19,11 +19,10 @@
     <link rel="apple-touch-icon-precomposed" href="assets/i/app-icon72x72@2x.png">
     <meta name="msapplication-TileImage" content="assets/i/app-icon72x72@2x.png">
     <meta name="msapplication-TileColor" content="#0e90d2">
-    <link rel="stylesheet" href="assets/css/amazeui.min.css">
-    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="../assets/css/amazeui.min.css">
+    <link rel="stylesheet" href="../assets/css/app.css">
     <link rel="stylesheet" href="//unpkg.com/element-ui@2.15.5/lib/theme-chalk/index.css">
 </head>
-
 <style>
     .des {
         font-size: 13px;
@@ -75,7 +74,6 @@
         margin-bottom: 18px;
     }
 </style>
-
 <body>
 <div id="app">
     <header class="am-topbar am-topbar-inverse admin-header" id="header">
@@ -144,32 +142,13 @@
     <div class="header">
         <div class="am-g">
             <h1>你坛 - Post it</h1>
-            <p>一个你可以畅所欲言的地方</p>
+            <p>{{blockname}}</p>
         </div>
         <hr />
     </div>
-
-    <div id="blocks">
-        <h1 style="margin-left: 80px">板块</h1>
-        <el-row>
-            <el-col :span="3" v-for="(block, index) in blocks" :key="block" :offset="1">
-                <el-card :body-style="{ padding: '0px' }" shadow="hover">
-                    <img src="assets/block_icons/block_icon_测试.png" class="image">
-                    <div style="padding: 14px;" @click="Gotoposts(block.name)">
-                        <span>{{block.name}}</span>
-                        <div class="bottom clearfix">
-                            <span class="des">{{block.des}}</span>
-                        </div>
-                    </div>
-                </el-card>
-            </el-col>
-        </el-row>
-        <hr />
-    </div>
-
     <div id="posts">
-        <h1 style="margin-left: 80px">热门帖子</h1>
-        <el-row v-for="(post, index) in hotPosts" :key="post">
+        <h1 style="margin-left: 80px">所有帖子</h1>
+        <el-row v-for="(post, index) in posts" :key="post">
             <el-col :span="1750" :offset="1">
                 <el-card class="box-card">
                     <div slot="header" class="clearfix" @click="openPost(post.postId)">
@@ -185,13 +164,12 @@
     </div>
 </div>
 </body>
-
-<script src="assets/vue.js"></script>
+<script src="../assets/vue.js"></script>
 <script src="//unpkg.com/element-ui@2.15.5/lib/index.js"></script>
 <script src="http://libs.baidu.com/jquery/1.11.3/jquery.min.js"></script>
 <script src="http://cdn.staticfile.org/modernizr/2.8.3/modernizr.js"></script>
-<script src="assets/js/amazeui.ie8polyfill.min.js"></script>
-<script src="assets/js/amazeui.min.js"></script>
+<script src="../assets/js/amazeui.ie8polyfill.min.js"></script>
+<script src="../assets/js/amazeui.min.js"></script>
 <script>
     let data =
         {
@@ -203,8 +181,8 @@
             userName: "",
             userId: 0,
             currentDate: new Date(),
-            blocks: [],
-            hotPosts: [],
+            blockname: "",
+            posts: []
         }
 
     new Vue(
@@ -213,27 +191,15 @@
             data: data,
             created: function ()
             {
-                $.post("/post_it/get_blocks", function (res)
-                {
-                    let result = JSON.parse(res);
-
-                    if (result.success === true)
-                    {
-                        data.blocks = result.blocks
-                    }
-                    else
-                    {
-                        alert(result.msg)
-                    }
-                })
-
-                $.post("/post_it/get_hot_posts", function (res)
+                data.blockname=window.localStorage.getItem("blockname");
+                $.post("/post_it/get_block_posts",data, function (res)
                 {
                     let result = JSON.parse(res)
 
                     if (result.success === true)
                     {
-                        data.hotPosts = result.hotPosts
+                        data.posts = result.posts
+                        console.log(data.posts);
                     }
                     else
                     {
@@ -267,19 +233,9 @@
             },
             methods:
                 {
-                    openBlock: function (name)
-                    {
-                        window.open("/post_it/block?name=" + name)
-                    },
+                    openBlock: function (name) {alert(name)},
 
                     openPost: function (id) {alert(id)},
-
-
-                    Gotoposts: function (name)
-                    {
-                        window.localStorage.setItem("blockname",name)
-                        window.open("post_it/Posts");
-                    },
 
                     login: function ()
                     {
