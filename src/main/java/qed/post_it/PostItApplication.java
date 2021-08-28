@@ -20,9 +20,5 @@ public class PostItApplication
         }
 
         SpringApplication.run(PostItApplication.class, args);
-
-        var sql = new SqlConnector();
-        sql.UnLike(1, 1);
-        sql.CloseConnection();
     }
 }

@@ -207,6 +207,36 @@ public class SqlConnector
         return blockInfo;
     }
 
+    public Post GetPost(int id)
+    {
+        Post post = null;
+        try
+        {
+            var result = statement.executeQuery("select * from posts where post_id=" + id);
+
+            if (result.next())
+            {
+                post = new Post(result.getString("post_name"), result.getInt("post_id"),
+                        result.getInt("publisher_id"), result.getInt("high_floor"),
+                        result.getString("name"), dateFormat.format(result.getTimestamp("publish_time")));
+            }
+
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetPost: 查询数据时异常");
+        }
+
+        if (post == null)
+        {
+            throw new RuntimeException("SqlConnector.GetPost: 查询数据时异常");
+        }
+
+        return post;
+    }
+
     public ArrayList<Post> GetBlockPosts(String blockName)
     {
         var posts = new ArrayList<Post>();
@@ -217,8 +247,8 @@ public class SqlConnector
             while (result.next())
             {
                 posts.add(new Post(result.getString("post_name"), result.getInt("post_id"),
-                        result.getInt("publisher_id"), result.getString("name"),
-                        dateFormat.format(result.getTimestamp("publish_time"))));
+                        result.getInt("publisher_id"), result.getInt("high_floor"),
+                        result.getString("name"), dateFormat.format(result.getTimestamp("publish_time"))));
             }
 
             result.close();
@@ -226,7 +256,7 @@ public class SqlConnector
         catch (SQLException ex)
         {
             ex.printStackTrace();
-            throw new RuntimeException("SqlConnector.GetPosts: 查询数据时异常");
+            throw new RuntimeException("SqlConnector.GetBlockPosts: 查询数据时异常");
         }
 
         return posts;
@@ -242,8 +272,8 @@ public class SqlConnector
             while (result.next())
             {
                 posts.add(new Post(result.getString("post_name"), result.getInt("post_id"),
-                        result.getInt("publisher_id"), result.getString("name"),
-                        dateFormat.format(result.getTimestamp("publish_time"))));
+                        result.getInt("publisher_id"), result.getInt("high_floor"),
+                        result.getString("name"), dateFormat.format(result.getTimestamp("publish_time"))));
             }
 
             result.close();
@@ -266,6 +296,7 @@ public class SqlConnector
                 allPostInfo.add(new Post(result.getString("post_name"),
                         result.getInt("post_id"),
                         result.getInt("publisher_id"),
+                        result.getInt("high_floor"),
                         result.getString("name"),
                         dateFormat.format(result.getTimestamp("publish_time"))));
             }
@@ -347,6 +378,44 @@ public class SqlConnector
         return floor;
     }
 
+    public int GetReplyNum(int id)
+    {
+        int num = 0;
+
+        try
+        {
+            var result = statement.executeQuery("select COUNT(*) from replies where post_id=" + id);
+            num = result.getInt("COUNT(*)");
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetReplyNum: 查询数据时异常。");
+        }
+
+        return num;
+    }
+
+    public int GetCommentNum(int postId, int floor)
+    {
+        int num = 0;
+
+        try
+        {
+            var result = statement.executeQuery(String.format("select COUNT(*) from comments where post_id=%d and floor=%d", postId, floor));
+            num = result.getInt("COUNT(*)");
+            result.close();
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetCommentNum: 查询数据时异常。");
+        }
+
+        return num;
+    }
+
     public void NewPost(String postName, int publisherId, String block)
     {
         int id = 0;
@@ -391,6 +460,7 @@ public class SqlConnector
         {
             statement.execute(String.format("insert into replies values(%d, %d, '%s', 0, 0, NOW(), %d)",
                     postId, floor, reply, publisherId));
+            statement.execute(String.format("update posts set high_floor=%d where post_id=%d", floor, postId));
         }
         catch (SQLException ex)
         {

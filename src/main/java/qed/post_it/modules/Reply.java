@@ -26,15 +26,7 @@ public class Reply
     @Override
     public String toString()
     {
-        return "Reply{" +
-                "reply='" + reply + '\'' +
-                ", postId=" + postId +
-                ", publisherId=" + publisherId +
-                ", publisherName='" + publisherName + '\'' +
-                ", floor=" + floor +
-                ", likes=" + likes +
-                ", dislikes=" + dislikes +
-                ", publishTime='" + publishTime + '\'' +
-                '}';
+        return String.format("{\"reply\": \"%s\", \"postId\": %d, \"publisherId\": %d, \"publisherName\": \"%s\", \"floor\": %d, \"publishTime\": \"%s\"}",
+                reply, postId, publisherId, publisherName, floor, publishTime);
     }
 }
