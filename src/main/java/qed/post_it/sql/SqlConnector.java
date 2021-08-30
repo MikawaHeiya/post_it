@@ -207,12 +207,33 @@ public class SqlConnector
         return blockInfo;
     }
 
+    public String BlockDescribeOf(String name)
+    {
+        var describe = "";
+
+        try
+        {
+            var result = statement.executeQuery("select block_describe from blocks where block_name='" + name + "'");
+            if (result.next())
+            {
+                describe = result.getString("block_describe");
+            }
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.BlockDescribeOf: 查询数据时异常");
+        }
+
+        return describe;
+    }
+
     public Post GetPost(int id)
     {
         Post post = null;
         try
         {
-            var result = statement.executeQuery("select * from posts where post_id=" + id);
+            var result = statement.executeQuery("select * from posts, users where posts.post_id=" + id + " and posts.publisher_id=users.id");
 
             if (result.next())
             {
@@ -260,6 +281,28 @@ public class SqlConnector
         }
 
         return posts;
+    }
+
+    public int GetBlockPostNum(String blockName)
+    {
+        int num = 0;
+
+        try
+        {
+            var result = statement.executeQuery("select COUNT(*) from posts where block='" + blockName + "'");
+            if (result.next())
+            {
+                num = result.getInt("COUNT(*)");
+            }
+            result.close();
+
+            return num;
+        }
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetBlockPostNum: 查询数据时异常");
+        }
     }
 
     public ArrayList<Post> GetHotPosts()
@@ -320,8 +363,8 @@ public class SqlConnector
             {
                 replies.add(new Reply(result.getString("reply"), result.getInt("post_id"),
                         result.getInt("publisher_id"), result.getString("name"),
-                        result.getInt("floor"), result.getInt("like"),
-                        result.getInt("dislike"),
+                        result.getInt("floor"), result.getInt("likes"),
+                        result.getInt("dislikes"),
                         dateFormat.format(result.getTimestamp("reply_time"))));
             }
 
@@ -336,22 +379,19 @@ public class SqlConnector
         return replies;
     }
 
-    public TreeMap<Integer, Comment> GetComments(int postId)
+    public ArrayList<Comment> GetComments(int postId, int floor)
     {
-        var comments = new TreeMap<Integer, Comment>();
+        var comments = new ArrayList<Comment>();
 
         try
         {
-            var result = statement.executeQuery("select * from comments, users where comments.publisher_id=users.id and comments.post_id=" + postId + " order by comments.floor");
-
+            var result = statement.executeQuery(String.format("select * from comments, users where comments.publisher_id=users.id and comments.post_id=%d and comments.floor=%d", postId, floor));
             while (result.next())
             {
-                comments.put(result.getInt("floor"),
-                        new Comment(result.getString("comment"), result.getInt("post_id"),
-                                result.getInt("owner_id"), result.getInt("publisher_id"),
-                                result.getString("name"), dateFormat.format(result.getTimestamp("comment_time"))));
+                comments.add(new Comment(result.getString("comment"), result.getInt("post_id"),
+                        result.getInt("owner_id"), result.getInt("publisher_id"),
+                        result.getString("name"), dateFormat.format(result.getTimestamp("comment_time"))));
             }
-
             result.close();
         }
         catch (SQLException ex)
@@ -364,18 +404,36 @@ public class SqlConnector
     }
 
     //获取用户收到的回复与评论
-    //public ArrayList<Message> GetMessages(int id)
+    public ArrayList<Message> GetMessages(int id)
+    {
+        var messages = new ArrayList<Message>();
+        try
+        {
+            var result = statement.executeQuery("select replies.publisher_id, users.name, posts.post_id, replies.reply_time, replies.reply from replies, users, posts where replies.publisher_id=users.id and posts.publisher_id=" + id + " and posts.post_id=replies.post_id");
+            while (result.next())
+            {
+                messages.add(new Message(result.getString("name"), result.getInt("publisher_id"),
+                        result.getInt("post_id"), MessageType.Reply,
+                        dateFormat.format(result.getTimestamp("reply_time")), result.getString("reply")));
+            }
+            result.close();
 
-    //获取帖子的层数
-    public int GetFloor(int postId){
-        int floor=0;
-        try{
-            var result=statement.executeQuery("select max(floor) from posts,replies where posts.post_id=replies.post_id and posts.post_id="+postId);
-            floor=result.getInt("floor");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            var res = statement.executeQuery("select comments.publisher_id, users.name, comments.post_id, comments.comment_time, comments.comment from comments, users where comments.owner_id=" + id + " and comments.publisher_id=users.id");
+            while (res.next())
+            {
+                messages.add(new Message(res.getString("name"), res.getInt("publisher_id"),
+                        res.getInt("post_id"), MessageType.Comment,
+                        dateFormat.format(res.getTimestamp("comment_time")), res.getString("comment")));
+            }
+            res.close();
         }
-        return floor;
+        catch (SQLException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("SqlConnector.GetMessages: 查询数据时异常");
+        }
+
+        return messages;
     }
 
     public int GetReplyNum(int id)
@@ -385,7 +443,10 @@ public class SqlConnector
         try
         {
             var result = statement.executeQuery("select COUNT(*) from replies where post_id=" + id);
-            num = result.getInt("COUNT(*)");
+            if (result.next())
+            {
+                num = result.getInt("COUNT(*)");
+            }
             result.close();
         }
         catch (SQLException ex)
@@ -404,7 +465,10 @@ public class SqlConnector
         try
         {
             var result = statement.executeQuery(String.format("select COUNT(*) from comments where post_id=%d and floor=%d", postId, floor));
-            num = result.getInt("COUNT(*)");
+            if (result.next())
+            {
+                num = result.getInt("COUNT(*)");
+            }
             result.close();
         }
         catch (SQLException ex)
@@ -416,7 +480,7 @@ public class SqlConnector
         return num;
     }
 
-    public void NewPost(String postName, int publisherId, String block)
+    public int NewPost(String postName, int publisherId, String block)
     {
         int id = 0;
 
@@ -443,8 +507,8 @@ public class SqlConnector
 
         try
         {
-            statement.execute(String.format("insert into posts values('%s', NOW(), %d, %d, '%s')",
-                    postName, id, publisherId, block));
+            statement.execute(String.format("insert into posts values('%s', NOW(), %d, %d, '%s', %d)",
+                    postName, id, publisherId, block, 0));
             statement.execute(String.format("update infos set post_num=%d where id=0", id));
         }
         catch (SQLException ex)
@@ -452,12 +516,27 @@ public class SqlConnector
             ex.printStackTrace();
             throw new RuntimeException("SqlConnector.NewPost: 更新数据时异常。");
         }
+
+        return id;
     }
 
-    public void NewReply(String reply, int postId, int floor, int publisherId)
+    public void NewReply(String reply, int postId, int publisherId, boolean newPost)
     {
         try
         {
+            int highFloor = 0;
+            var result = statement.executeQuery("select high_floor from posts where post_id=" + postId);
+            if (result.next())
+            {
+                highFloor = result.getInt("high_floor");
+            }
+
+            if (highFloor < 0)
+            {
+                throw new RuntimeException("SqlConnector.NewReply: 查询数据时异常。");
+            }
+
+            int floor = newPost ? 0 : highFloor + 1;
             statement.execute(String.format("insert into replies values(%d, %d, '%s', 0, 0, NOW(), %d)",
                     postId, floor, reply, publisherId));
             statement.execute(String.format("update posts set high_floor=%d where post_id=%d", floor, postId));

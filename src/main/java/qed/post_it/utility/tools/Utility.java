@@ -9,6 +9,11 @@ public class Utility
 {
     public static <T> String JoinJSON(List<T> list)
     {
+        if (list.size() == 0)
+        {
+            return "[]";
+        }
+
         var builder = new StringBuilder("[");
 
         int i = 0;

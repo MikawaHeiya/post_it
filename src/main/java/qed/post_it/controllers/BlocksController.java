@@ -172,19 +172,4 @@ public class BlocksController
             return "{\"success\": false, \"msg\": \"未知错误。\"}";
         }
     }
-    @RequestMapping(value = "/post_it/get_block_posts", method = RequestMethod.POST)
-    @ResponseBody
-    public String GetBlockPosts(HttpServletRequest request, HttpServletResponse response)
-    {
-        try
-        {
-            var sql = new SqlConnector();
-            var blockname=request.getParameter("blockname");
-            var posts=sql.GetBlockPosts(blockname);
-            return "{\"success\":true,\"blockname\":\""+ blockname +"\", \"posts\": "+Utility.JoinJSON(posts) + "}";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return  "{\"success\": false, \"msg\": \"未知错误。\"}";
-        }
-    }
 }

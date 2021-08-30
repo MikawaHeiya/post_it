@@ -22,13 +22,8 @@ public class Comment
     @Override
     public String toString()
     {
-        return "Comment{" +
-                "comment='" + comment + '\'' +
-                ", postId=" + postId +
-                ", ownerId=" + ownerId +
-                ", publisherId=" + publisherId +
-                ", publisherName='" + publisherName + '\'' +
-                ", commentTime='" + commentTime + '\'' +
-                '}';
+        return String.format("{\"comment\": \"%s\", \"postId\": %d, \"ownerId\": %d, " +
+                        "\"publisherId\": %d, \"publisherName\": \"%s\", \"commentTime\": \"%s\"}",
+                comment, postId, ownerId, publisherId, publisherName, commentTime);
     }
 }
